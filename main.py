@@ -6,7 +6,6 @@ import os
 import uvicorn
 
 app = FastAPI()
-
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 class GeminiRequest(BaseModel):
@@ -16,7 +15,7 @@ class GeminiRequest(BaseModel):
 @app.post("/api/llm")
 def call_gemini_real(req: GeminiRequest):
     api_key = os.environ.get("GEMINI_API_KEY")
-    # [핵심 수정] v1beta를 v1으로 변경 (정식 릴리즈 경로)
+    # v1beta를 완전히 버리고, 구글이 보장하는 v1 정식 엔드포인트 사용
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={api_key}"
     
     payload = {
@@ -27,14 +26,14 @@ def call_gemini_real(req: GeminiRequest):
         response = requests.post(url, json=payload)
         data = response.json()
         
-        # 상세 에러 발생 시 로그 확인용
-        if 'error' in data:
-            return {"content": [{"text": f"구글 API 에러: {data['error']['message']}"}]}
+        # 404가 발생하면 응답 데이터를 그대로 로그에 찍어 원인을 파악합니다
+        if response.status_code != 200:
+            return {"content": [{"text": f"Error {response.status_code}: {data}"}]}
             
         text = data['candidates'][0]['content']['parts'][0]['text']
         return {"content": [{"text": text}]}
     except Exception as e:
-        return {"content": [{"text": f"연산 에러: {str(e)}"}]}
+        return {"content": [{"text": f"Exception: {str(e)}"}]}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
