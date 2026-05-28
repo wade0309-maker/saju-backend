@@ -33,10 +33,16 @@ def call_gemini_real(req: GeminiRequest):
         # 2. Gemini API 세팅
         genai.configure(api_key=api_key)
         
-        # 3. 모델 설정 (system_instruction을 지원하는 1.5 Pro 모델 적용)
+        # 3. 모델 설정 (문법 오류 수정 및 1.5-flash 안정성 고도화)
+        # 생성 변수(generation_config)를 추가하여 긴 리포트가 도중에 끊기지 않도록 방어합니다.
         model = genai.GenerativeModel(
-            model_name=model: "gemini-1.5-flash",
-            system_instruction=req.systemPrompt
+            model_name="gemini-1.5-flash",
+            system_instruction=req.systemPrompt,
+            generation_config={
+                "temperature": 0.7,
+                "top_p": 0.95,
+                "max_output_tokens": 8192,
+            }
         )
         
         # 4. 프롬프트 전달 및 응답 생성
