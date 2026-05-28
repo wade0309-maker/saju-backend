@@ -38,7 +38,7 @@ def call_gemini_real(req: GeminiRequest):
     payload = {
         "contents": [{"parts": [{"text": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"}]}],
         "generationConfig": {
-            "temperature": 0.6,  # 결과값의 무분별한 변동을 제어하기 위한 최적 밸런스
+            "temperature": 0.3,  # 결과값의 무분별한 변동을 제어하기 위한 최적 밸런스
             "topP": 0.95,
             "maxOutputTokens": 8192  # 13단계 보고서 완결을 위한 최대 대역폭 확보
         }
