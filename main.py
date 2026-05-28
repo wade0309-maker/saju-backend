@@ -7,10 +7,6 @@ import uvicorn
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"status": "success", "message": "팔자길드 Pro 엔진 가동 완료"}
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -30,13 +26,11 @@ def call_gemini_real(req: GeminiRequest):
 
     try:
         genai.configure(api_key=api_key)
-        # 안정적인 정식 명칭 사용
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-pro",
-            system_instruction=req.systemPrompt
-        )
+        # 구글이 API 버전과 상관없이 자동으로 매핑해주는 가장 안전한 공식 모델명
+        model = genai.GenerativeModel("gemini-1.5-flash") 
+        
         response = model.generate_content(
-            f"다음 명식 데이터로 리포트를 작성해.\n\n{req.baziData}"
+            f"{req.systemPrompt}\n\n데이터: {req.baziData}"
         )
         return {"content": [{"text": response.text}]}
     except Exception as e:
@@ -44,4 +38,4 @@ def call_gemini_real(req: GeminiRequest):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)
