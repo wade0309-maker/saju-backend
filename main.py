@@ -6,20 +6,51 @@ import os
 import uvicorn
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# 프론트엔드(Vercel)와의 통신을 위한 CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class GeminiRequest(BaseModel):
+    baziData: str
+    systemPrompt: str
 
 @app.post("/api/llm")
-def get_model_list(req: dict):
+def call_gemini_real(req: GeminiRequest):
     api_key = os.environ.get("GEMINI_API_KEY")
-    # 구글 API에 모델 리스트를 요청하는 정식 주소입니다.
-    url = f"https://generativelanguage.googleapis.com/v1/models?key={api_key}"
+    
+    # 1. 2.5 Pro 모델을 호출하는 공식 API 경로
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+    
+    # 2. 리포트 생성을 위한 페이로드 구성
+    payload = {
+        "contents": [{"parts": [{"text": f"{req.systemPrompt}\n\n데이터: {req.baziData}"}]}],
+        "generationConfig": {
+            "temperature": 0.7,
+            "topP": 0.95,
+            "maxOutputTokens": 8192
+        }
+    }
     
     try:
-        response = requests.get(url)
-        # 서버 응답 내용을 그대로 받아옵니다.
-        return {"content": [{"text": str(response.json())}]}
+        # 3. 구글 서버와 직접 통신
+        response = requests.post(url, json=payload)
+        data = response.json()
+        
+        # 4. 에러 발생 시 상세 확인
+        if 'error' in data:
+            return {"content": [{"text": f"구글 API 에러: {data['error']['message']}"}]}
+            
+        # 5. 정상 응답 추출
+        text = data['candidates'][0]['content']['parts'][0]['text']
+        return {"content": [{"text": text}]}
+        
     except Exception as e:
-        return {"content": [{"text": f"Error: {str(e)}"}]}
+        return {"content": [{"text": f"서버 연산 에러: {str(e)}"}]}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
