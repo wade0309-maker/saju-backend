@@ -32,7 +32,7 @@ def call_gemini_real(req: GeminiRequest):
         return {"content": [{"text": "서버 환경 변수 에러: GEMINI_API_KEY가 누락되었습니다."}]}
     
     # 계정 연동 상태가 확인된 최상위 2.5 Pro 모델의 정식 v1 API 경로
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key={api_key}"
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-3.5-flash:generateContent?key={api_key}"
     
     # 일관성 확보 및 토큰 최대 확보를 위한 페이로드 설계
     payload = {
