@@ -7,10 +7,16 @@ import uvicorn
 
 app = FastAPI()
 
-# 프론트엔드(Vercel)와의 통신을 위한 CORS 설정
+# 루트 경로 접속 확인 (Health Check용)
+@app.get("/")
+def read_root():
+    return {"status": "success", "message": "Paljaguild Premium Pro Server is running"}
+
+# 프론트엔드(Vercel)와의 안전한 자원 공유를 위한 CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -22,35 +28,34 @@ class GeminiRequest(BaseModel):
 @app.post("/api/llm")
 def call_gemini_real(req: GeminiRequest):
     api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return {"content": [{"text": "서버 환경 변수 에러: GEMINI_API_KEY가 누락되었습니다."}]}
     
-    # 1. 2.5 Pro 모델을 호출하는 공식 API 경로
+    # 계정 연동 상태가 확인된 최상위 2.5 Pro 모델의 정식 v1 API 경로
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key={api_key}"
     
-    # 2. 리포트 생성을 위한 페이로드 구성
+    # 일관성 확보 및 토큰 최대 확보를 위한 페이로드 설계
     payload = {
-        "contents": [{"parts": [{"text": f"{req.systemPrompt}\n\n데이터: {req.baziData}"}]}],
+        "contents": [{"parts": [{"text": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"}]}],
         "generationConfig": {
-            "temperature": 0.7,
+            "temperature": 0.6,  # 결과값의 무분별한 변동을 제어하기 위한 최적 밸런스
             "topP": 0.95,
-            "maxOutputTokens": 8192
+            "maxOutputTokens": 8192  # 13단계 보고서 완결을 위한 최대 대역폭 확보
         }
     }
     
     try:
-        # 3. 구글 서버와 직접 통신
         response = requests.post(url, json=payload)
         data = response.json()
         
-        # 4. 에러 발생 시 상세 확인
+        # 구글 API 내부 에러 트래킹
         if 'error' in data:
-            return {"content": [{"text": f"구글 API 에러: {data['error']['message']}"}]}
+            return {"content": [{"text": f"구글 API 반환 에러: {data['error']['message']}"}]}
             
-        # 5. 정상 응답 추출
         text = data['candidates'][0]['content']['parts'][0]['text']
         return {"content": [{"text": text}]}
-        
     except Exception as e:
-        return {"content": [{"text": f"서버 연산 에러: {str(e)}"}]}
+        return {"content": [{"text": f"서버 내부 연산 실패: {str(e)}"}]}
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
