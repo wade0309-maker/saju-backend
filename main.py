@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import google.generativeai as genai
 import os
+import uvicorn
 
 app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"status": "success"}
+    return {"status": "success", "message": "팔자길드 서버 가동 중"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,3 +40,8 @@ def call_gemini_real(req: GeminiRequest):
         return {"content": [{"text": response.text}]}
     except Exception as e:
         return {"content": [{"text": f"Error: {str(e)}"}]}
+
+# [핵심] 서버가 종료되지 않고 계속 포트를 열어두도록 하는 시동 모터
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
