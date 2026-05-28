@@ -27,7 +27,7 @@ def call_gemini_real(req: GeminiRequest):
     try:
         genai.configure(api_key=api_key)
         # 구글이 API 버전과 상관없이 자동으로 매핑해주는 가장 안전한 공식 모델명
-        model = genai.GenerativeModel("gemini-1.5-flash") 
+        model = genai.GenerativeModel("gemini-1.5-pro") 
         
         response = model.generate_content(
             f"{req.systemPrompt}\n\n데이터: {req.baziData}"
