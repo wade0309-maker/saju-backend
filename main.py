@@ -8,7 +8,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"status": "success", "message": "팔자길드 GEM 2.0 백엔드 AI 엔진이 정상 가동 중입니다."}
+    return {"status": "success"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,36 +23,19 @@ class GeminiRequest(BaseModel):
 
 @app.post("/api/llm")
 def call_gemini_real(req: GeminiRequest):
-    # 1. 렌더(Render) 환경 변수에서 Gemini API 키를 안전하게 불러옵니다.
     api_key = os.environ.get("GEMINI_API_KEY")
-    
     if not api_key:
-        return {"content": [{"text": "시스템 에러: 백엔드 서버에 Gemini API 키가 설정되지 않았습니다."}]}
+        return {"content": [{"text": "API Key Error"}]}
 
     try:
-        # 2. Gemini API 세팅
         genai.configure(api_key=api_key)
-        
-        # 3. 모델 설정 (문법 오류 수정 및 1.5-flash 안정성 고도화)
-        # 생성 변수(generation_config)를 추가하여 긴 리포트가 도중에 끊기지 않도록 방어합니다.
         model = genai.GenerativeModel(
             model_name="gemini-1.5-flash",
-            system_instruction=req.systemPrompt,
-            generation_config={
-                "temperature": 0.7,
-                "top_p": 0.95,
-                "max_output_tokens": 8192,
-            }
+            system_instruction=req.systemPrompt
         )
-        
-        # 4. 프롬프트 전달 및 응답 생성
         response = model.generate_content(
-            f"다음 명식 데이터로 완벽한 프리미엄 리포트를 작성해.\n\n{req.baziData}"
+            f"다음 명식 데이터로 리포트를 작성해.\n\n{req.baziData}"
         )
-        
-        # 5. 기존 프론트엔드 코드(Claude 규격)가 깨지지 않도록 동일한 JSON 구조로 변환하여 반환
         return {"content": [{"text": response.text}]}
-        
     except Exception as e:
-        # 통신 실패 시 프론트엔드가 다운되지 않도록 에러 메시지 반환
-        return {"content": [{"text": f"Gemini AI 연산 중 문제가 발생했습니다: {str(e)}"}]}
+        return {"content": [{"text": f"Error: {str(e)}"}]}
