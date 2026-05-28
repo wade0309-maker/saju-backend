@@ -6,6 +6,10 @@ import os
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"status": "success", "message": "팔자길드 GEM 2.0 백엔드 AI 엔진이 정상 가동 중입니다."}
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
