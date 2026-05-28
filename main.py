@@ -7,10 +7,9 @@ import uvicorn
 
 app = FastAPI()
 
-# 루트 접속 확인용
 @app.get("/")
 def read_root():
-    return {"status": "success", "message": "팔자길드 Pro 서버 가동 중"}
+    return {"status": "success", "message": "팔자길드 Pro 엔진 가동 완료"}
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,9 +30,9 @@ def call_gemini_real(req: GeminiRequest):
 
     try:
         genai.configure(api_key=api_key)
-        # 최고 성능의 Pro 모델 적용
+        # 안정적인 정식 명칭 사용
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-pro-latest",
+            model_name="gemini-1.5-pro",
             system_instruction=req.systemPrompt
         )
         response = model.generate_content(
