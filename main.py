@@ -35,7 +35,7 @@ def call_gemini_real(req: GeminiRequest):
         
         # 3. 모델 설정 (system_instruction을 지원하는 1.5 Pro 모델 적용)
         model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
+            model_name=model: "gemini-1.5-flash",
             system_instruction=req.systemPrompt
         )
         
