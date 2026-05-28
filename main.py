@@ -20,20 +20,27 @@ class GeminiRequest(BaseModel):
 
 @app.post("/api/llm")
 def call_gemini_real(req: GeminiRequest):
+    # API 키 확인
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return {"content": [{"text": "API Key Error"}]}
 
     try:
+        # 라이브러리 설정 단순화
         genai.configure(api_key=api_key)
-        # 구글이 API 버전과 상관없이 자동으로 매핑해주는 가장 안전한 공식 모델명
-        model = genai.GenerativeModel("gemini-1.5-pro") 
         
-        response = model.generate_content(
-            f"{req.systemPrompt}\n\n데이터: {req.baziData}"
-        )
+        # [핵심 수정] 명시적 버전 경로 없이 모델만 호출
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        
+        # system_instruction은 호출 시점에 포함하거나 
+        # generate_content 호출 시 프롬프트로 통합
+        full_prompt = f"{req.systemPrompt}\n\n데이터: {req.baziData}"
+        
+        response = model.generate_content(full_prompt)
+        
         return {"content": [{"text": response.text}]}
     except Exception as e:
+        # 에러 발생 시 상세 원인 반환
         return {"content": [{"text": f"Error: {str(e)}"}]}
 
 if __name__ == "__main__":
