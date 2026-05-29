@@ -28,12 +28,11 @@ def call_claude(req: AnalysisRequest):
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
         return {"content": [{"text": "서버 환경 변수 에러: ANTHROPIC_API_KEY가 누락되었습니다."}]}
-
     try:
         client = anthropic.Anthropic(api_key=api_key)
-       message = client.messages.create(
-    model="claude-haiku-4-5-20251001",
-    max_tokens=2500,
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=2500,
             messages=[
                 {
                     "role": "user",
