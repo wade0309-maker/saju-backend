@@ -31,9 +31,10 @@ def call_claude(req: AnalysisRequest):
 
     try:
         client = anthropic.Anthropic(api_key=api_key)
-        message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=4000,
+       message = client.messages.create(
+    model="claude-haiku-4-5-20251001",
+    max_tokens=2500,
+    timeout=55.0,
             messages=[
                 {
                     "role": "user",
