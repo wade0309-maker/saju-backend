@@ -40,7 +40,7 @@ def call_gemini_real(req: GeminiRequest):
         "generationConfig": {
             "temperature": 0.3,  # 결과값의 무분별한 변동을 제어하기 위한 최적 밸런스
             "topP": 0.95,
-            "maxOutputTokens": 8192  # 13단계 보고서 완결을 위한 최대 대역폭 확보
+            "maxOutputTokens": 3000  # 13단계 보고서 완결을 위한 최대 대역폭 확보
         }
     }
     
