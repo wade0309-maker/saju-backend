@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import anthropic
 import os
@@ -27,23 +28,27 @@ class AnalysisRequest(BaseModel):
 def call_claude(req: AnalysisRequest):
     api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        return {"content": [{"text": "서버 환경 변수 에러: ANTHROPIC_API_KEY가 누락되었습니다."}]}
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "ANTHROPIC_API_KEY 누락"}
+        )
     try:
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=2500,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"
-                }
-            ]
+            messages=[{
+                "role": "user",
+                "content": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"
+            }]
         )
         text = message.content[0].text
         return {"content": [{"text": text}]}
     except Exception as e:
-        return {"content": [{"text": f"서버 내부 연산 실패: {str(e)}"}]}
+        return JSONResponse(
+            status_code=500,
+            content={"detail": str(e)}
+        )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
