@@ -36,7 +36,7 @@ def call_claude(req: AnalysisRequest):
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=2500,
+            max_tokens=3500,
             messages=[{
                 "role": "user",
                 "content": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"
