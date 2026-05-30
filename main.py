@@ -46,5 +46,5 @@ def call_claude(req: AnalysisRequest):
         return {"content": [{"text": f"서버 내부 연산 실패: {str(e)}"}]}
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
