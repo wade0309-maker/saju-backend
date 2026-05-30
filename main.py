@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests
+import anthropic
 import os
 import uvicorn
 
@@ -19,32 +19,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class GeminiRequest(BaseModel):
+class AnalysisRequest(BaseModel):
     baziData: str
     systemPrompt: str
 
 @app.post("/api/llm")
-def call_gemini(req: GeminiRequest):
-    api_key = os.environ.get("GEMINI_API_KEY")
+def call_claude(req: AnalysisRequest):
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
-        return {"content": [{"text": "서버 환경 변수 에러: GEMINI_API_KEY가 누락되었습니다."}]}
-
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
-    payload = {
-        "contents": [{"parts": [{"text": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"}]}],
-        "generationConfig": {
-            "temperature": 0.3,
-            "topP": 0.95,
-            "maxOutputTokens": 2500
-        }
-    }
-
+        return {"content": [{"text": "서버 환경 변수 에러: ANTHROPIC_API_KEY가 누락되었습니다."}]}
     try:
-        response = requests.post(url, json=payload, timeout=55)
-        data = response.json()
-        if 'error' in data:
-            return {"content": [{"text": f"구글 API 에러: {data['error']['message']}"}]}
-        text = data['candidates'][0]['content']['parts'][0]['text']
+        client = anthropic.Anthropic(api_key=api_key)
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=2500,
+            messages=[
+                {
+                    "role": "user",
+                    "content": f"{req.systemPrompt}\n\n[내담자 명식 데이터]\n{req.baziData}"
+                }
+            ]
+        )
+        text = message.content[0].text
         return {"content": [{"text": text}]}
     except Exception as e:
         return {"content": [{"text": f"서버 내부 연산 실패: {str(e)}"}]}
