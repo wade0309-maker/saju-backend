@@ -1,4 +1,8 @@
 fastapi
 uvicorn
-pydantic
 anthropic
+pydantic
+httpx
+gspread
+google-auth
+python-multipart
