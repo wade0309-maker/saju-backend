@@ -142,6 +142,7 @@ class AnalysisRequest(BaseModel):
     baziData: str
     systemPrompt: str
     isPaid: Optional[bool] = False
+    isTest: Optional[bool] = False
 
 class PaymentConfirmRequest(BaseModel):
     paymentKey: str
@@ -191,6 +192,7 @@ async def call_claude(req: AnalysisRequest, request: Request):
             "tab_name":   tab_name,
             "is_paid":    req.isPaid,
             "ip_hash":    ip_hash,
+            "is_test":    req.isTest,
             "created_at": kst.isoformat()
         })
 
