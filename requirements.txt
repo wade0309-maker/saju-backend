@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+anthropic
+pydantic
+httpx
+gspread
+google-auth
+python-multipart
+slowapi
