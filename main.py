@@ -152,7 +152,7 @@ TAB_MAX_TOKENS = {
     "wealth":       4000,  # 자산 시뮬레이션 표 + 대운 서사 + 액션플랜
     "future":       3500,  # 커리어 전략
     "deepdiag":     3500,  # 심층 진단
-    "deepinterest": 3500,  # 관심사 분석
+    "deepinterest": 4500,  # 관심사 분석
     "trait":        4000,  # 유아 기질 (섹션 적음)
     "parent":       4000,  # 부모 전략 (섹션 적음)
     "gungham":      5000,  # 궁합 — 8개 섹션, 토큰 넉넉히
